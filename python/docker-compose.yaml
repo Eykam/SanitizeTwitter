@@ -1,0 +1,49 @@
+version: "3"
+services:
+  selenium:
+    image: selenium/standalone-chrome
+    container_name: selenium
+    shm_size: 2g
+    privileged: true
+    environment:
+      - VNC_NO_PASSWORD=1
+      - NODE_MAX_SESSION=5
+      - NODE_MAX_INSTANCES=5
+      - GRID_MAX_SESSION=31556926
+      - GRID_BROWSER_TIMEOUT=31556926
+      - GRID_TIMEOUT=31556926
+      - GRID_SESSION_TIMEOUT=31556926
+      - SESSION_TIMEOUT=31556926
+      - NODE_SESSION_TIMEOUT=31556926
+      - GRID_CLEAN_UP_CYCLE=31556926
+      - SE_NODE_SESSION_TIMEOUT=31556926
+      - SE_SESSION_REQUEST_TIMEOUT=31556926
+    networks:
+      - twitter-app
+    expose:
+      - 4444
+    ports:
+      - 4444:4444
+      - 7900:7900
+    volumes:
+      - ./tmp/chrome_profiles:/tmp/chrome_profiles
+  python:
+    image: twitter-driver-image
+    container_name: twitter-driver-container
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    depends_on:
+      - selenium
+    expose:
+      - 4343
+      - 5005
+    ports:
+      - 4343:4343
+      - 5005:5005
+    networks:
+      - twitter-app
+
+networks:
+  twitter-app:
+    driver: bridge

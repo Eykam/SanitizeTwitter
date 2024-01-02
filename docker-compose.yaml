@@ -1,0 +1,82 @@
+version: "3.9"
+services:
+  queue:
+    image: redis/redis-stack:latest
+    container_name: twitter-translate-redis
+    expose:
+      - 6379
+    ports:
+      - 8002:8001
+    networks:
+      - twitter-app
+    volumes:
+      - ./javascript/queue/data:/data
+      - ./javascript/queue/redis.conf:/redis-stack.conf
+
+  producer:
+    image: producer-image
+    depends_on:
+      - queue
+      - python
+    container_name: twitter-producer-container
+    networks:
+      - twitter-app
+    build:
+      context: ./
+      dockerfile: ./javascript/producer/Dockerfile
+    volumes:
+      - ./uploads:/app/uploads
+    expose:
+      - 3000
+    ports:
+      - 3000:3000
+  # consumer:
+  selenium:
+    image: selenium/standalone-chrome:latest
+    container_name: selenium-browser
+    shm_size: 2g
+    privileged: true
+    environment:
+      - VNC_NO_PASSWORD=1
+      - NODE_MAX_SESSION=5
+      - NODE_MAX_INSTANCES=5
+      - GRID_MAX_SESSION=31556926
+      - GRID_BROWSER_TIMEOUT=31556926
+      - GRID_TIMEOUT=31556926
+      - GRID_SESSION_TIMEOUT=31556926
+      - SESSION_TIMEOUT=31556926
+      - NODE_SESSION_TIMEOUT=31556926
+      - GRID_CLEAN_UP_CYCLE=31556926
+      - SE_NODE_SESSION_TIMEOUT=31556926
+      - SE_SESSION_REQUEST_TIMEOUT=31556926
+    networks:
+      - twitter-app
+    expose:
+      - 4444
+    ports:
+      - 4444:4444
+      - 7900:7900
+    volumes:
+      - ./home/selenium:/home/selenium
+  python:
+    image: twitter-driver-image
+    container_name: twitter-driver-container
+    build:
+      context: ./
+      dockerfile: ./python/Dockerfile
+    depends_on:
+      - selenium
+    expose:
+      - 4343
+      - 5005
+    ports:
+      - 4343:4343
+      - 5005:5005
+    networks:
+      - twitter-app
+    volumes:
+      - ./uploads:/app/uploads
+
+networks:
+  twitter-app:
+    driver: bridge
