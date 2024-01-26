@@ -212,7 +212,7 @@ def postTweet(bot, request, in_reply_to, video_path):
     return {"responseId" : response_id, "pollId" : poll_id }
 
 # ============================================= INITIALIZE BOT ======================================
-CLIENT = TwitterClient.TwitterBot("sanitizeGG","Thc!61546154")
+CLIENT = TwitterClient.TwitterBot("","")
 REQUEST = TwitterClient.init_client(CLIENT)
 
 # ============================================= SERVER ======================================
